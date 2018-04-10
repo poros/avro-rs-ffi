@@ -201,6 +201,42 @@ ffi_fn! {
 }
 
 ffi_fn! {
+    unsafe fn avro_array_get_size(array: *mut AvroValue) -> Result<usize> {
+        let array = &mut *(array as *mut Value);
+        match array {
+            &mut Value::Array(ref items) => {
+                Ok(items.len())
+            },
+            _ => {
+                Err(err_msg("Value is not an array"))
+            },
+        }
+    }
+}
+
+ffi_fn! {
+    unsafe fn avro_array_get_value_by_index(
+        array: *const AvroValue,
+        index: usize
+    ) -> Result<*const AvroValue> {
+        let array = &mut *(array as *mut Value);
+        match array {
+            &mut Value::Array(ref items) => {
+                let len = items.len();
+                if 0 < index && index <= len {
+                    Ok(&items[index] as *const Value as *const AvroValue)
+                } else {
+                    Err(err_msg("Index out of range"))
+                }
+            },
+            _ => {
+                Err(err_msg("Value is not an array"))
+            },
+        }
+    }
+}
+
+ffi_fn! {
     unsafe fn avro_value_map_new(capacity: usize) -> Result<*mut AvroValue> {
         Ok(ffi_avro_value!(Value::Map(HashMap::with_capacity(capacity))))
     }
