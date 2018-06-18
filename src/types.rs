@@ -1,6 +1,6 @@
-use avro::schema::Schema;
-use avro::types::ToAvro;
-use avro::types::{Record, Value};
+use avro_rs::schema::Schema;
+use avro_rs::types::ToAvro;
+use avro_rs::types::{Record, Value};
 use core::{AvroByteArray, AvroStr};
 use failure::err_msg;
 use schema::AvroSchema;
@@ -141,15 +141,15 @@ ffi_fn! {
 }
 
 ffi_fn! {
-    unsafe fn avro_value_enum_new(value: c_int) -> Result<*mut AvroValue> {
-        Ok(ffi_avro_value!(Value::Enum(value as i32)))
+    unsafe fn avro_value_enum_new(value_index: c_int, value_repr: AvroStr) -> Result<*mut AvroValue> {
+        Ok(ffi_avro_value!(Value::Enum(value_index as i32, value_repr.into_string())))
     }
 }
 
 ffi_fn! {
-    unsafe fn avro_value_enum_get(value: *const AvroValue) -> Result<c_int> {
+    unsafe fn avro_value_enum_get(value: *const AvroValue) -> Result<AvroStr> {
         let value = &*(value as * const Value);
-        if let & Value::Enum(e) = value { Ok(e as c_int) } else { Err(err_msg("value is not an enum")) }
+        if let &Value::Enum(_, ref s) = value { Ok(AvroStr::new(s)) } else { Err(err_msg("value is not an enum")) }
     }
 
 }

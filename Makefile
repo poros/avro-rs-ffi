@@ -1,3 +1,5 @@
+# BUILDING
+
 include/avro_rs.h: $(shell find src -type f -name "*.rs")
 	RUSTUP_TOOLCHAIN=nightly cbindgen -v -c cbindgen.toml . -o $@
 
@@ -5,17 +7,27 @@ include/avro_rs.h: $(shell find src -type f -name "*.rs")
 build: include/avro_rs.h
 	cargo build
 
-.PHONY: test
-test: include/avro_rs.h
-	cargo test
-
 .PHONY: release
 release: include/avro_rs.h
 	cargo build --release
 
-.PHONY: fmt
-fmt:
+# TESTING
+
+.PHONY: test
+test: include/avro_rs.h
+	cargo test
+
+# LINTING
+
+.PHONY: lint
+lint:
 	cargo +nightly fmt
+
+.PHONY: clippy
+clippy:
+	cargo +nightly clippy --all-features
+
+# CLEANING
 
 .PHONY: clean
 clean:

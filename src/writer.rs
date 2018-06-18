@@ -1,6 +1,6 @@
-use avro::schema::Schema;
-use avro::types::Value;
-use avro::writer::Writer;
+use avro_rs::schema::Schema;
+use avro_rs::types::Value;
+use avro_rs::Writer;
 use avro_utils::avro_value_from_pickle;
 use codec::AvroCodec;
 use core::AvroByteArray;
