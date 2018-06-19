@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "cargo-clippy", allow(cast_ptr_alignment))]
 extern crate avro_rs;
 extern crate failure;
 extern crate serde;
