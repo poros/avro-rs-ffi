@@ -8,62 +8,62 @@ use serde_pickle::value::HashableValue;
 use serde_pickle::value::Value as PickleValue;
 
 pub fn avro_value_from_pickle(schema: &Schema, value: PickleValue) -> Result<Value, Error> {
-    match schema {
-        &Schema::Null => from_null(value),
-        &Schema::Boolean => from_boolean(value),
-        &Schema::Int => from_int(value),
-        &Schema::Long => from_long(value),
-        &Schema::Float => from_float(value),
-        &Schema::Double => from_double(value),
-        &Schema::Bytes => from_bytes(value),
-        &Schema::String => from_string(value),
-        &Schema::Fixed { size, .. } => from_fixed(size, value),
-        &Schema::Array(ref inner) => from_array(inner, value),
-        &Schema::Map(ref inner) => from_map(inner, value),
-        &Schema::Union(ref inner) => from_union(inner, value),
-        &Schema::Record { ref fields, .. } => from_record(fields, value),
-        &Schema::Enum { ref symbols, .. } => from_enum(symbols, value),
+    match *schema {
+        Schema::Null => from_null(&value),
+        Schema::Boolean => from_boolean(&value),
+        Schema::Int => from_int(&value),
+        Schema::Long => from_long(&value),
+        Schema::Float => from_float(&value),
+        Schema::Double => from_double(&value),
+        Schema::Bytes => from_bytes(value),
+        Schema::String => from_string(value),
+        Schema::Fixed { size, .. } => from_fixed(size, value),
+        Schema::Array(ref inner) => from_array(inner, value),
+        Schema::Map(ref inner) => from_map(inner, value),
+        Schema::Union(ref inner) => from_union(inner, value),
+        Schema::Record { ref fields, .. } => from_record(fields, value),
+        Schema::Enum { ref symbols, .. } => from_enum(symbols, value),
     }
 }
 
-fn from_null(value: PickleValue) -> Result<Value, Error> {
+fn from_null(value: &PickleValue) -> Result<Value, Error> {
     match value {
         PickleValue::None => Ok(Value::Null),
         _ => Err(err_msg("not a null")),
     }
 }
 
-fn from_boolean(value: PickleValue) -> Result<Value, Error> {
+fn from_boolean(value: &PickleValue) -> Result<Value, Error> {
     match value {
-        PickleValue::Bool(b) => Ok(Value::Boolean(b)),
+        PickleValue::Bool(b) => Ok(Value::Boolean(*b)),
         _ => Err(err_msg("not a bool")),
     }
 }
 
-fn from_int(value: PickleValue) -> Result<Value, Error> {
+fn from_int(value: &PickleValue) -> Result<Value, Error> {
     match value {
-        PickleValue::I64(n) => Ok(Value::Int(n as i32)),
+        PickleValue::I64(n) => Ok(Value::Int(*n as i32)),
         _ => Err(err_msg("not an int")),
     }
 }
 
-fn from_long(value: PickleValue) -> Result<Value, Error> {
+fn from_long(value: &PickleValue) -> Result<Value, Error> {
     match value {
-        PickleValue::I64(n) => Ok(Value::Long(n)),
+        PickleValue::I64(n) => Ok(Value::Long(*n)),
         _ => Err(err_msg("not a long")),
     }
 }
 
-fn from_float(value: PickleValue) -> Result<Value, Error> {
+fn from_float(value: &PickleValue) -> Result<Value, Error> {
     match value {
-        PickleValue::F64(x) => Ok(Value::Float(x as f32)),
+        PickleValue::F64(x) => Ok(Value::Float(*x as f32)),
         _ => Err(err_msg("not a float")),
     }
 }
 
-fn from_double(value: PickleValue) -> Result<Value, Error> {
+fn from_double(value: &PickleValue) -> Result<Value, Error> {
     match value {
-        PickleValue::F64(x) => Ok(Value::Double(x)),
+        PickleValue::F64(x) => Ok(Value::Double(*x)),
         _ => Err(err_msg("not a double")),
     }
 }
@@ -151,7 +151,7 @@ fn from_enum(symbols: &[String], value: PickleValue) -> Result<Value, Error> {
             symbols
                 .iter()
                 .position(|ref item| item == &&s)
-                .ok_or(Error::from(err_msg("unsupported enum value")))? as i32,
+                .ok_or_else(|| err_msg("unsupported enum value"))? as i32,
             s,
         )),
         _ => Err(err_msg("not an enum")),
@@ -191,18 +191,15 @@ pub fn pickle_value_from_avro(value: Value) -> PickleValue {
     match value {
         Value::Null => PickleValue::None,
         Value::Boolean(b) => PickleValue::Bool(b),
-        Value::Int(n) => PickleValue::I64(n as i64),
+        Value::Int(n) => PickleValue::I64(i64::from(n)),
         Value::Long(n) => PickleValue::I64(n),
-        Value::Float(x) => PickleValue::F64(x as f64),
+        Value::Float(x) => PickleValue::F64(f64::from(x)),
         Value::Double(x) => PickleValue::F64(x),
         Value::Bytes(bytes) | Value::Fixed(_, bytes) => PickleValue::Bytes(bytes),
         Value::String(s) => PickleValue::String(s),
-        Value::Array(values) => PickleValue::List(
-            values
-                .into_iter()
-                .map(|value| pickle_value_from_avro(value))
-                .collect(),
-        ),
+        Value::Array(values) => {
+            PickleValue::List(values.into_iter().map(pickle_value_from_avro).collect())
+        },
         Value::Map(values) => PickleValue::Dict(
             values
                 .into_iter()
