@@ -13,14 +13,14 @@ pub struct AvroValue;
 #[no_mangle]
 pub unsafe extern "C" fn avro_value_free(v: *mut AvroValue) {
     if !v.is_null() {
-        let _ = Box::from_raw(v as *mut Value);
+        Box::from_raw(v);
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn avro_record_free(r: *mut AvroRecord) {
     if !r.is_null() {
-        let _ = Box::from_raw(r as *mut Record);
+        Box::from_raw(r as *mut Record);
     }
 }
 

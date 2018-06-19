@@ -73,8 +73,8 @@ mod tests {
     fn full_test2() {
         unsafe {
             let json = CString::new(r#"
-        {"namespace": "test", "type": "record", "name": "Test", "fields": [{"type": {"type": "string"}, "name": "field"}]}
-        "#).unwrap();
+            {"namespace": "test", "type": "record", "name": "Test", "fields": [{"type": {"type": "string"}, "name": "field"}]}
+            "#).unwrap();
             let avro_json = core::avro_str_from_c_str(json.as_ptr());
             let schema = schema::avro_schema_from_json(&avro_json);
             assert!(!schema.is_null());
@@ -104,7 +104,7 @@ mod tests {
 
             let string_value = types::avro_value_record_get(read_value, &field);
             let internal_string = types::avro_value_string_get(string_value);
-            assert_eq!("foo", internal_string.as_str(),);
+            assert_eq!("foo", internal_string.as_str());
 
             avro_reader_free(reader);
             avro_schema_free(schema);

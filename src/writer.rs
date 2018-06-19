@@ -41,8 +41,7 @@ ffi_fn! {
     unsafe fn avro_writer_append2(writer: *mut AvroWriter, value: *mut AvroValue) -> Result<usize> {
         let writer = &mut *(writer as *mut Writer<Vec<u8>>);
         let value = *(Box::from_raw(value as *mut Value));
-        let value = value.resolve(writer.schema());
-        Ok(writer.append(value?)?)
+        Ok(writer.append(value)?)
     }
 }
 
